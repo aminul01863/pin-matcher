@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pin Generator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="pin-generator half-width">
+                    <input class="form-control" type="text">
+                    <button class="generate-btn">Generate Pin</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="input-section half-width">
+                    <input class="form-control" type="text">
+                    <div class="numbers">
+                        <div class="calc-body">
+                            <div class="calc-button-row">
+                                <div class="button">7</div>
+                                <div class="button">8</div>
+                                <div class="button">9</div>
+                            </div>
+                            <div class="calc-button-row">
+                                <div class="button">4</div>
+                                <div class="button">5</div>
+                                <div class="button">6</div>
+                            </div>
+                            <div class="calc-button-row">
+                                <div class="button">1</div>
+                                <div class="button">2</div>
+                                <div class="button">3</div>
+                            </div>
+                            <div class="calc-button-row">
+                                <div class="button" data-action="back">
+                                    << /div>
+                                        <div class="button">0</div>
+                                        <div class="button" data-action="clear">C</div>
+                                </div>
+                                <div>
+                                    <button type="submit" class="submit-btn">Submit</button>
+                                    <p class="action-left">3 try left</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="notify-section">
+                    <p class="notify">❌ Pin Didn't Match, Please try again</p>
+                    <p class="notify">✅ Pin Matched... Secret door is opening for you</p>
+
+                    <p class="notify">❌ You must first Generate Pin</p>
+                    <p class="notify">❌ User Pin must be a 4 digit number</p>
+                </div>
+            </div>
+            <!-- add script -->
+            <script>
+                function getElement(elementClass) {
+                    let element = document.querySelector(elementClass);
+                    return element;
+                }
+
+                // function for element hide and show 
+                function toggleElement(element, hide = true) {
+                    if (hide === true) {
+                        element.style.display = "none";
+                    } else {
+                        element.style.display = "block";
+                    }
+                }
+                // hide the notifications
+                let notifyError = getElement(".notify-section p:first-child");
+                let notifySuccess = getElement(".notify-section p:nth-child(2)");
+                let notifyPin = getElement(".notify-section p:nth-child(3)");
+                let notifyUserPin = getElement(".notify-section p:nth-child(4)");
+
+                // hide elements at start
+                toggleElement(notifyError);
+                toggleElement(notifySuccess);
+                toggleElement(notifyPin);
+                toggleElement(notifyUserPin);
+
+                // get elements
+                let generatedPin = document.getElementsByClassName("form-control")[0];
+                let userPin = document.getElementsByClassName("form-control")[1];
+                let buttonGenerate = getElement(".generate-btn");
+
+                let userPinValue = "";
+                // random buttton event listener
+                buttonGenerate.addEventListener('click', function () {
+                    let randomNumber = Math.random();
+                    let randomString = randomNumber.toString();
+                    let randomFixed = randomString.substring(2, 6);
+                    generatedPin.value = randomFixed;
+                })
+
+                // add event listner to all buttons
+                const keys = document.querySelectorAll(".calc-body .button");
+                keys.forEach(function (key) {
+                    key.addEventListener('click', e => {
+                        const action = e.target.dataset.action;
+                        if (action == "clear") {
+                            userPinValue = "";
+                            userPin.value = userPinValue;
+                        } else if (action == "back") {
+                            userPinValue = userPinValue.substring(0, userPinValue.length - 1);
+                            userPin.value = userPinValue;
+
+                        } else if (e.target.className == "button") {
+                            userPinValue += e.target.innerHTML;
+                            userPin.value = userPinValue;
+
+                        }
+                    })
+
+                })
+
+                // regex for exact 4 digit number matching
+                let pattern = /^\d{4}$/;
+                // submit button functionality
+                let submitButton = getElement(".submit-btn");
+                let totalTry = 0;
+                let alert = getElement(".action-left");
+                submitButton.addEventListener('click', function () {
+
+                    userPinValue = userPin.value;
+                    totalTry += 1;
+
+                    if (totalTry <= 3) {
+                        alert.innerHTML = (3 - totalTry) + " try left";
+                        if (generatedPin.value == userPinValue &&
+                            generatedPin.value != "") {
+                            toggleElement(notifySuccess, hide = false);
+                            toggleElement(notifyError);
+                            toggleElement(notifyPin);
+                            toggleElement(notifyUserPin);
+                            submitButton.disabled = true;
+                        }
+
+                        else
+                            if (generatedPin.value.toString().length != 4) {
+                                toggleElement(notifySuccess);
+                                toggleElement(notifyError);
+                                toggleElement(notifyPin, hide = false);
+                                toggleElement(notifyUserPin);
+
+                            }
+                            else if (userPinValue.match(pattern) == null) {
+                                toggleElement(notifySuccess);
+                                toggleElement(notifyError);
+                                toggleElement(notifyPin);
+                                toggleElement(notifyUserPin, hide = false);
+                            }
+                            else if (generatedPin.value != userPinValue) {
+                                toggleElement(notifySuccess);
+                                toggleElement(notifyError, hide = false);
+                                toggleElement(notifyPin);
+                                toggleElement(notifyUserPin);
+                            }
+
+
+                    } else {
+                        submitButton.disabled = true;
+                    }
+
+                })
+            </script>
+</body>
+
+</html>
